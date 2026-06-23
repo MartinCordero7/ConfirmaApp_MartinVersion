@@ -1,3 +1,4 @@
+import 'dart:io';
 import '../../domain/entities/usuario.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -11,7 +12,7 @@ class MockAuthRepository implements AuthRepository {
 
   @override
   Future<Usuario?> login(String email, String password) async {
-    await Future.delayed(const Duration(seconds: 1)); // Simular red
+    await Future.delayed(const Duration(seconds: 1));
 
     final userMap = _usersDB.cast<Map<String,dynamic>?>().firstWhere(
       (u) => u?['email'] == email && u?['password'] == password,
@@ -24,6 +25,20 @@ class MockAuthRepository implements AuthRepository {
     }
     
     throw Exception('Credenciales inválidas. Usa admin@test.com o user@test.com con clave 123456, o regístrate.');
+  }
+
+  @override
+  Future<Usuario?> loginWithGoogle() async {
+    await Future.delayed(const Duration(seconds: 1));
+    // Mock: devuelve un participante de prueba
+    _currentUser = Usuario(
+      id: 'google_mock_1',
+      nombre: 'Usuario Google',
+      email: 'google@test.com',
+      rol: RolUsuario.participante,
+      biometriaRegistrada: false,
+    );
+    return _currentUser;
   }
 
   @override
@@ -47,10 +62,11 @@ class MockAuthRepository implements AuthRepository {
 
   @override
   Future<void> registrarBiometria(String userId) async {
-    final userMap = _usersDB.firstWhere((u) => u['user'].id == userId);
-    userMap['user'].biometriaRegistrada = true;
-    if (_currentUser?.id == userId) {
-      _currentUser?.biometriaRegistrada = true;
-    }
+    // Mock: no hace nada en memoria
+  }
+
+  @override
+  Future<void> registrarBiometriaConFoto(String userId, File foto) async {
+    // Mock: no hace nada en memoria
   }
 }

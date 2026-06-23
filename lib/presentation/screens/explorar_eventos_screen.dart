@@ -95,13 +95,22 @@ class _ExplorarEventosScreenState extends State<ExplorarEventosScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('📍 ${evento.lugar}'),
-                                Text('📅 ${evento.fecha.toString().substring(0, 10)} - ${evento.hora}'),
-                              ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '📍 ${evento.lugar}',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    '📅 ${evento.fecha.toString().substring(0, 10)} - ${evento.hora}',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             FilledButton(
                               onPressed: isEnrolled ? null : () => _inscribirse(evento),
                               style: isEnrolled ? FilledButton.styleFrom(backgroundColor: Colors.grey) : null,

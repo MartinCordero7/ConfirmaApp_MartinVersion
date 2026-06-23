@@ -79,6 +79,33 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _loginWithGoogle() async {
+    final viewModel = context.read<LoginViewModel>();
+    try {
+      final success = await viewModel.loginWithGoogle();
+      if (!mounted) return;
+
+      if (success && viewModel.currentUser != null) {
+        final user = viewModel.currentUser!;
+        if (user.rol == RolUsuario.organizador) {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainLayoutOrganizador()));
+        } else {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainLayoutParticipante()));
+        }
+      } else if (viewModel.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(viewModel.errorMessage!), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<LoginViewModel>();
@@ -145,7 +172,44 @@ class _LoginScreenState extends State<LoginScreen> {
                   });
                 },
                 child: Text(_isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión', style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),const Text('Admin: admin@test.com / 123456\nParticipante: user@test.com / 123456', 
+              ),
+              if (_isLogin) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('O', style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed: viewModel.isLoading ? null : _loginWithGoogle,
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFDADADA)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      backgroundColor: Colors.white,
+                    ),
+                    icon: Image.network(
+                      'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                      height: 22,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.login, size: 22),
+                    ),
+                    label: const Text(
+                      'Continuar con Google',
+                      style: TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              const Text('Admin: admin@test.com / 123456\nParticipante: user@test.com / 123456', 
                 textAlign: TextAlign.center, 
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),

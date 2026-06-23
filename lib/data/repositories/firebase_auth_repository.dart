@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/entities/usuario.dart';
 
@@ -33,7 +34,45 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<Usuario?> loginWithGoogle() async {
+    try {
+      final googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return null; // usuario canceló
+
+      final googleAuth = await googleUser.authentication;
+      final credential = auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final user = userCredential.user!;
+
+      final docRef = _firestore.collection('usuarios').doc(user.uid);
+      final doc = await docRef.get();
+
+      if (!doc.exists) {
+        // Primer login con Google: crear perfil en Firestore
+        await docRef.set({
+          'nombre': user.displayName ?? googleUser.email.split('@')[0],
+          'email': user.email ?? '',
+          'rol': 'participante',
+          'biometriaRegistrada': false,
+        });
+      }
+
+      final updatedDoc = await docRef.get();
+      return _userFromFirebase(user, updatedDoc.data());
+    } on auth.FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? 'Error al iniciar sesión con Google');
+    } catch (e) {
+      throw Exception('Error al iniciar sesión con Google: $e');
+    }
+  }
+
+  @override
   Future<void> logout() async {
+    await GoogleSignIn().signOut();
     await _firebaseAuth.signOut();
   }
 

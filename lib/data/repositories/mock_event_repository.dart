@@ -15,6 +15,7 @@ class MockEventRepository implements EventRepository {
       radioToleranciaMetros: 100,
       fecha: DateTime.now().add(const Duration(days: 1)),
       nivelControl: NivelControl.estricto,
+      organizadorId: 'org_1',
     ),
   ];
 
