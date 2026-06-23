@@ -84,14 +84,76 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final success = await viewModel.loginWithGoogle();
       if (!mounted) return;
+      _navegarSegunRol(viewModel);
+    } on Exception catch (e) {
+      if (!mounted) return;
 
-      if (success && viewModel.currentUser != null) {
-        final user = viewModel.currentUser!;
-        if (user.rol == RolUsuario.organizador) {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainLayoutOrganizador()));
-        } else {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainLayoutParticipante()));
-        }
+      // Detectar si es un usuario nuevo que necesita elegir rol
+      final msg = e.toString();
+      if (msg.contains('NeedsRoleSelectionException') || msg.contains('loginWithGoogle')) {
+        await _mostrarDialogoRolGoogle();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg.replaceAll('Exception: ', '')), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _mostrarDialogoRolGoogle() async {
+    RolUsuario rolElegido = RolUsuario.participante;
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setStateDialog) => AlertDialog(
+          title: const Text('¡Bienvenido!'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Es tu primer acceso con Google.\n¿Con qué rol quieres registrarte?'),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<RolUsuario>(
+                value: rolElegido,
+                decoration: InputDecoration(
+                  labelText: 'Rol',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                items: RolUsuario.values
+                    .map((r) => DropdownMenuItem(
+                          value: r,
+                          child: Text(r == RolUsuario.organizador ? 'Organizador' : 'Participante'),
+                        ))
+                    .toList(),
+                onChanged: (val) => setStateDialog(() => rolElegido = val!),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Continuar')),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmar != true || !mounted) return;
+
+    final viewModel = context.read<LoginViewModel>();
+    try {
+      final rolStr = rolElegido == RolUsuario.organizador ? 'organizador' : 'participante';
+      final success = await viewModel.loginWithGoogle(rol: rolStr);
+      if (!mounted) return;
+      if (success) {
+        _navegarSegunRol(viewModel);
       } else if (viewModel.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(viewModel.errorMessage!), backgroundColor: Colors.red),
@@ -102,6 +164,17 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
+      }
+    }
+  }
+
+  void _navegarSegunRol(LoginViewModel viewModel) {
+    if (viewModel.currentUser != null) {
+      final user = viewModel.currentUser!;
+      if (user.rol == RolUsuario.organizador) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainLayoutOrganizador()));
+      } else {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainLayoutParticipante()));
       }
     }
   }

@@ -28,14 +28,13 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Usuario?> loginWithGoogle() async {
+  Future<Usuario?> loginWithGoogle({String? rol}) async {
     await Future.delayed(const Duration(seconds: 1));
-    // Mock: devuelve un participante de prueba
     _currentUser = Usuario(
       id: 'google_mock_1',
       nombre: 'Usuario Google',
       email: 'google@test.com',
-      rol: RolUsuario.participante,
+      rol: rol == 'organizador' ? RolUsuario.organizador : RolUsuario.participante,
       biometriaRegistrada: false,
     );
     return _currentUser;

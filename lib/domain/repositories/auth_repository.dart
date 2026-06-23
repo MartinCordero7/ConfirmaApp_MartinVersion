@@ -3,7 +3,7 @@ import 'dart:io';
 
 abstract class AuthRepository {
   Future<Usuario?> login(String email, String password);
-  Future<Usuario?> loginWithGoogle();
+  Future<Usuario?> loginWithGoogle({String? rol});
   Future<void> logout();
   Future<Usuario?> getCurrentUser();
   Future<void> registrarUsuario(Usuario usuario, String password);

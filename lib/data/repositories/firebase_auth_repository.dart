@@ -6,6 +6,14 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/entities/usuario.dart';
 
+/// Excepción especial: el usuario es nuevo en Google Sign-In y necesita elegir un rol.
+class NeedsRoleSelectionException implements Exception {
+  final String uid;
+  final String nombre;
+  final String email;
+  const NeedsRoleSelectionException({required this.uid, required this.nombre, required this.email});
+}
+
 class FirebaseAuthRepository implements AuthRepository {
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -34,7 +42,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Usuario?> loginWithGoogle() async {
+  Future<Usuario?> loginWithGoogle({String? rol}) async {
     try {
       final googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return null; // usuario canceló
@@ -52,17 +60,27 @@ class FirebaseAuthRepository implements AuthRepository {
       final doc = await docRef.get();
 
       if (!doc.exists) {
-        // Primer login con Google: crear perfil en Firestore
+        if (rol == null) {
+          // Usuario nuevo sin rol: pedir selección en la UI
+          throw NeedsRoleSelectionException(
+            uid: user.uid,
+            nombre: user.displayName ?? googleUser.email.split('@')[0],
+            email: user.email ?? '',
+          );
+        }
+        // Crear perfil con el rol elegido
         await docRef.set({
           'nombre': user.displayName ?? googleUser.email.split('@')[0],
           'email': user.email ?? '',
-          'rol': 'participante',
+          'rol': rol,
           'biometriaRegistrada': false,
         });
       }
 
       final updatedDoc = await docRef.get();
       return _userFromFirebase(user, updatedDoc.data());
+    } on NeedsRoleSelectionException {
+      rethrow; // dejar que la UI lo maneje
     } on auth.FirebaseAuthException catch (e) {
       throw Exception(e.message ?? 'Error al iniciar sesión con Google');
     } catch (e) {
