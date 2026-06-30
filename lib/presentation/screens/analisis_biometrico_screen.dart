@@ -5,12 +5,9 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 class AnalisisBiometricoScreen extends StatefulWidget {
   final String nombreParticipante;
-  final String fotoUrl;
-
   const AnalisisBiometricoScreen({
     super.key,
     required this.nombreParticipante,
-    required this.fotoUrl,
   });
 
   @override
@@ -137,10 +134,9 @@ class _AnalisisBiometricoScreenState extends State<AnalisisBiometricoScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 30,
-                    backgroundImage: widget.fotoUrl.isNotEmpty ? NetworkImage(widget.fotoUrl) : null,
-                    child: widget.fotoUrl.isEmpty ? const Icon(Icons.person) : null,
+                    child: Icon(Icons.person, size: 40),
                   ),
                   const SizedBox(height: 8),
                   Text('Analizando a: ${widget.nombreParticipante}', style: const TextStyle(color: Colors.white, fontSize: 16)),

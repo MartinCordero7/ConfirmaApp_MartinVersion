@@ -61,7 +61,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
       
       final data = doc.data()!;
       final nombre = data['nombre'] ?? 'Desconocido';
-      final fotoUrl = data['fotoBiometriaUrl'];
 
       final inRange = await _checkGPSRange();
       if (!inRange) {
@@ -76,7 +75,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
           context,
           MaterialPageRoute(builder: (_) => AnalisisBiometricoScreen(
             nombreParticipante: nombre,
-            fotoUrl: fotoUrl ?? '',
           )),
         );
 
@@ -85,49 +83,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
           _mostrarError('Cancelado: No se pudo verificar la identidad por IA.');
           return;
         }
+        
+        // 4. Verificación Visual Automática (Rostro detectado)
+        _marcarAsistencia(userId);
         cameraController.start();
-      }
-
-      // 4. Verificación Visual (Organizador confirma)
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Verificación Facial', textAlign: TextAlign.center),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (fotoUrl != null)
-                  CircleAvatar(radius: 60, backgroundImage: NetworkImage(fotoUrl))
-                else
-                  const CircleAvatar(radius: 60, child: Icon(Icons.person, size: 60)),
-                const SizedBox(height: 16),
-                const Text('Participante:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                Text(nombre, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                const Text('Verifique que la persona al frente suyo sea la misma de la fotografía.', textAlign: TextAlign.center),
-              ],
-            ),
-            actionsAlignment: MainAxisAlignment.spaceEvenly,
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _mostrarError('Asistencia denegada: No coincide el rostro.');
-                },
-                child: const Text('Rechazar', style: TextStyle(color: Colors.red)),
-              ),
-              FilledButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _marcarAsistencia(userId);
-                },
-                child: const Text('Confirmar Identidad'),
-              ),
-            ],
-          ),
-        );
       }
     } catch (e) {
       _mostrarError('Error al procesar: $e');

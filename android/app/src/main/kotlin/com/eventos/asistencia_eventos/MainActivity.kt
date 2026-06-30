@@ -1,4 +1,4 @@
-package com.eventos.asistencia_eventos
+package com.confirma_app
 
 import io.flutter.embedding.android.FlutterActivity
 

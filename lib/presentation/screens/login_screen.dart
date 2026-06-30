@@ -41,25 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
           _nombreController.text.trim(),
           _rolSeleccionado,
         );
+        // Registro exitoso, no pedimos selfie
 
-        if (_rolSeleccionado == RolUsuario.participante && mounted) {
-          final registrar = await showDialog<bool>(
-            context: context,
-            barrierDismissible: false,
-            builder: (ctx) => AlertDialog(
-              title: const Text('¡Registro Exitoso!'),
-              content: const Text('Para acceder a eventos de nivel "Estricto", necesitas registrar tu rostro.\n\n¿Deseas registrar tu biometría ahora? (También puedes hacerlo después en tu Perfil).'),
-              actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Más tarde')),
-                FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Registrar ahora')),
-              ],
-            ),
-          );
-
-          if (registrar == true && mounted) {
-            await Navigator.push(context, MaterialPageRoute(builder: (_) => const TomarSelfieScreen()));
-          }
-        }
       }
 
       if (viewModel.currentUser != null && mounted) {
