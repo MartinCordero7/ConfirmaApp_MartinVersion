@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:1063306793581:android:6b853b7178a01cd2786564",
         "android_client_info": {
-          "package_name": "com.confirma_app"
+          "package_name": "com.eventos.asistencia_eventos"
         }
       },
       "oauth_client": [
@@ -17,8 +17,16 @@
           "client_id": "1063306793581-1jml7845f1e9k5ho475ba7p9tefpq064.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.confirma_app",
+            "package_name": "com.eventos.asistencia_eventos",
             "certificate_hash": "4019fa36032445073c6dc2ae025fe34633879b18"
+          }
+        },
+        {
+          "client_id": "1063306793581-r618fk4av1i679516oqqv5a9jdl2ev8v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.eventos.asistencia_eventos",
+            "certificate_hash": "c2b6b0bf3931875a67620023bf9fb15e624fdc70"
           }
         },
         {
@@ -42,7 +50,7 @@
               "client_id": "1063306793581-b0v0cd3krt544c8omqgpvp7h165hln77.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.confirma_app"
+                "bundle_id": "com.eventos.asistenciaEventos"
               }
             }
           ]
